@@ -1,159 +1,35 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>NEXUS-V | CORE INTERFACE</title>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        :root { --glow: #00f2ff; --bg: #02050a; --glass: rgba(0, 242, 255, 0.05); }
-        
-        body { 
-            background: var(--bg); color: var(--glow); font-family: 'Orbitron', sans-serif; 
-            margin: 0; height: 100vh; display: flex; flex-direction: column;
-            background-image: radial-gradient(circle at center, #0a192f 0%, #02050a 100%);
-        }
-
-        /* Animowane tło skanera */
-        .scanline {
-            width: 100%; height: 2px; background: rgba(0, 242, 255, 0.1);
-            position: absolute; top: 0; z-index: 100; animation: scan 4s linear infinite;
-        }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
-
-        header {
-            padding: 20px 40px; border-bottom: 1px solid var(--glow);
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-        }
-
-        .main-grid {
-            display: grid; grid-template-columns: 350px 1fr; grid-template-rows: 1fr 200px;
-            gap: 15px; padding: 15px; flex: 1;
-        }
-
-        .module {
-            background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.2);
-            border-radius: 10px; position: relative; overflow: hidden;
-            display: flex; flex-direction: column;
-        }
-
-        /* MONITOR CENTRALNY */
-        #monitor-core { grid-row: 1 / 2; position: relative; box-shadow: 0 0 50px rgba(0, 242, 255, 0.1); }
-        #player { width: 100%; height: 100%; transform: scale(1.05); } /* Lekkie powiększenie by ukryć krawędzie */
-
-        /* LISTA SYGNAŁÓW */
-        .signal-list { padding: 15px; overflow-y: auto; flex: 1; }
-        .signal-entry {
-            background: rgba(0, 242, 255, 0.1); padding: 12px; margin-bottom: 10px;
-            border-left: 4px solid var(--glow); cursor: pointer; transition: 0.3s;
-            font-size: 12px; text-transform: uppercase;
-        }
-        .signal-entry:hover { background: var(--glow); color: #000; box-shadow: 0 0 15px var(--glow); }
-
-        /* KONSOLA KOMEND */
-        #console { 
-            grid-column: 1 / 3; background: #000; padding: 15px; 
-            border-top: 2px solid var(--glow); font-family: monospace; color: #00ff00;
-        }
-
-        .input-box {
-            background: transparent; border: 1px solid var(--glow);
-            color: var(--glow); padding: 10px; width: 100%; box-sizing: border-box;
-            outline: none; margin-bottom: 10px;
-        }
-
-        .cmd-btn {
-            background: transparent; border: 1px solid var(--glow); color: var(--glow);
-            padding: 10px 20px; cursor: pointer; width: 100%; font-weight: bold;
-        }
-
-        /* Overlay na player */
-        .vignette {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
-        }
+        body { background: #000; color: #00ff41; font-family: monospace; padding: 20px; border: 1px solid #00ff41; overflow: hidden; }
+        .equalizer { display: flex; align-items: flex-end; height: 100px; gap: 5px; justify-content: center; margin-top: 50px; }
+        .bar { width: 15px; background: #00ff41; animation: bounce 1s infinite ease-in-out; }
+        @keyframes bounce { 0%, 100% { height: 10px; } 50% { height: 80px; } }
+        .track-info { border: 1px solid #333; padding: 10px; margin-top: 20px; background: #050505; }
+        .control-btn { border: 1px solid #00ff41; background: none; color: #00ff41; padding: 10px; cursor: pointer; margin: 5px; }
+        .control-btn:hover { background: #00ff41; color: #000; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<div class="scanline"></div>
-
-<header>
-    <div style="font-size: 28px; font-weight: bold; letter-spacing: 10px;">NEXUS-V</div>
-    <div id="clock">BOOTING...</div>
-</header>
-
-<main class="main-grid">
-    <section class="module">
-        <div style="padding: 15px; background: rgba(0, 242, 255, 0.1); font-size: 14px;">WEJŚCIE DANYCH</div>
-        <div style="padding: 15px;">
-            <input type="text" id="ytUrl" class="input-box" placeholder="WPISZ ID LUB LINK...">
-            <button class="cmd-btn" onclick="captureSignal()">PRZECHWYĆ SYGNAŁ</button>
+    <div style="text-align:center">
+        <h2>DEKODER AUDIO NEXUS-V</h2>
+        <div class="equalizer">
+            <div class="bar" style="animation-delay: 0.1s"></div>
+            <div class="bar" style="animation-delay: 0.3s"></div>
+            <div class="bar" style="animation-delay: 0.2s"></div>
+            <div class="bar" style="animation-delay: 0.4s"></div>
+            <div class="bar" style="animation-delay: 0.1s"></div>
         </div>
-        <div class="signal-list" id="signalList">
-            </div>
-    </section>
-
-    <section class="module" id="monitor-core">
-        <div id="player"></div>
-        <div class="vignette"></div>
-    </section>
-
-    <section id="console">
-        <div style="color: #666; margin-bottom: 5px;">[TERMINAL STATUS ACTIVE]</div>
-        <div id="logOutput">> System gotowy. Oczekiwanie na Administratora Maćka...</div>
-    </section>
-</main>
-
-<script>
-    let player;
-    let signals = JSON.parse(localStorage.getItem('nexus_signals')) || [];
-
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            videoId: 'dQw4w9WgXcQ',
-            playerVars: { 'controls': 0, 'modestbranding': 1, 'rel': 0, 'disablekb': 1 },
-            events: { 'onReady': updateList }
-        });
-    }
-
-    function captureSignal() {
-        let input = document.getElementById('ytUrl').value;
-        let id = input.includes('v=') ? input.split('v=')[1].split('&')[0] : input;
-        
-        if (id && !signals.includes(id)) {
-            signals.unshift(id);
-            localStorage.setItem('nexus_signals', JSON.stringify(signals));
-            updateList();
-            log("Sygnał " + id + " przechwycony pomyślnie.");
-            document.getElementById('ytUrl').value = '';
-        }
-    }
-
-    function updateList() {
-        const list = document.getElementById('signalList');
-        list.innerHTML = signals.map(id => `
-            <div class="signal-entry" onclick="loadSignal('${id}')">
-                [DATA_FRAGMENT] ID: ${id.substring(0,8)}
-            </div>
-        `).join('');
-    }
-
-    function loadSignal(id) {
-        player.loadVideoById(id);
-        log("Przełączanie na częstotliwość: " + id);
-    }
-
-    function log(msg) {
-        const out = document.getElementById('logOutput');
-        out.innerHTML = `> ${msg}<br>` + out.innerHTML;
-    }
-
-    setInterval(() => {
-        document.getElementById('clock').innerText = "STREFA: " + new Date().toLocaleTimeString();
-    }, 1000);
-</script>
-
+        <div class="track-info">
+            STREAMS STATUS: WAITING FOR DATA PACKETS...<br>
+            BUFFERING: 100%
+        </div>
+        <div>
+            <button class="control-btn">PLAY</button>
+            <button class="control-btn">STOP</button>
+            <button class="control-btn">SYNC</button>
+        </div>
+    </div>
 </body>
 </html>
