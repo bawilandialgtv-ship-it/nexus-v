@@ -2,71 +2,182 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS-V | System Operacyjny</title>
+    <title>NEXUS-V | CORE OS v1.0</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        :root { --glow: #58a6ff; --bg: #0d1117; --panel: #161b22; }
-        body { background-color: var(--bg); color: #c9d1d9; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { background-color: var(--panel); padding: 15px 30px; border-bottom: 2px solid var(--glow); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(88, 166, 255, 0.2); }
-        h1 { margin: 0; font-size: 24px; letter-spacing: 4px; color: var(--glow); text-shadow: 0 0 10px var(--glow); }
-        main { display: flex; flex: 1; padding: 20px; gap: 20px; }
-        #side-panel { width: 300px; background: #010409; border: 1px solid #30363d; border-radius: 12px; display: flex; flex-direction: column; padding: 15px; }
-        .video-list { flex: 1; overflow-y: auto; margin-bottom: 15px; }
-        .video-btn { width: 100%; padding: 10px; margin-bottom: 8px; background: var(--panel); border: 1px solid #30363d; color: white; text-align: left; cursor: pointer; border-radius: 6px; font-size: 13px; }
-        .video-btn:hover { background: var(--glow); color: black; font-weight: bold; }
-        #display-core { flex: 1; background: #000; border: 1px solid #30363d; border-radius: 12px; display: flex; flex-direction: column; }
-        iframe { flex: 1; width: 100%; border: none; border-radius: 12px 12px 0 0; }
-        .info-bar { padding: 10px; background: var(--panel); font-family: monospace; font-size: 14px; text-align: center; border-radius: 0 0 12px 12px; color: var(--glow); }
-        .add-zone { display: flex; flex-direction: column; gap: 5px; }
-        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 8px; border-radius: 4px; }
-        button.add-btn { background: #238636; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        :root {
+            --glow: #00f2ff;
+            --bg: #020202;
+            --panel: #0a0a0a;
+            --border: #1a1a1a;
+            --text: #00f2ff;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Tło z efektem siatki */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%; height: 100%;
+            background: linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        header {
+            height: 60px;
+            background: var(--panel);
+            border-bottom: 2px solid var(--glow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            z-index: 10;
+        }
+
+        .logo { font-size: 24px; letter-spacing: 8px; font-weight: bold; text-shadow: 0 0 10px var(--glow); }
+
+        main {
+            display: grid;
+            grid-template-columns: 300px 1fr 250px;
+            height: calc(100vh - 60px);
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .window {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .window-header {
+            background: var(--border);
+            padding: 5px 15px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Odtwarzacz */
+        #viewport {
+            position: relative;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #player-container { flex: 1; position: relative; }
+        #player { width: 100%; height: 100%; pointer-events: none; }
+
+        /* Konsola sterowania */
+        .controls {
+            height: 50px;
+            background: #000;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .btn {
+            cursor: pointer;
+            padding: 5px 15px;
+            border: 1px solid var(--glow);
+            transition: 0.3s;
+            font-size: 12px;
+        }
+
+        .btn:hover { background: var(--glow); color: #000; box-shadow: 0 0 10px var(--glow); }
+
+        /* Lista i Logi */
+        .list-area { flex: 1; overflow-y: auto; padding: 10px; }
+        .entry {
+            padding: 10px;
+            border-bottom: 1px solid #111;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .entry:hover { background: rgba(0, 242, 255, 0.1); }
+
+        #terminal {
+            height: 150px;
+            grid-column: 1 / 4;
+            background: #000;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            color: #00ff00;
+            border: 1px solid #111;
+            overflow-y: hidden;
+        }
+
+        input {
+            background: #000;
+            border: 1px solid var(--glow);
+            color: var(--glow);
+            padding: 10px;
+            width: calc(100% - 22px);
+            margin: 10px 0;
+        }
+
+        .status-dot { width: 10px; height: 10px; background: #00ff00; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px #00ff00; }
     </style>
 </head>
 <body>
 
 <header>
-    <div>
-        <h1>NEXUS-V</h1>
-        <div style="font-size: 10px; color: #8b949e;">LOGOWANIE: ADMIN MACIEK | STATUS: ONLINE</div>
-    </div>
-    <div id="clock">TERMINAL SYSTEMOWY</div>
+    <div class="logo">NEXUS-V</div>
+    <div id="sys-clock">SYSTEM ONLINE | ADMIN: MACIEK</div>
 </header>
 
 <main>
-    <div id="side-panel">
-        <h3 style="margin-top:0">LISTA ANALIZ</h3>
-        <div class="video-list" id="videoList">
-            <button class="video-btn" onclick="loadVideo('dQw4w9WgXcQ')"># PROTOKÓŁ STARTOWY</button>
+    <section class="window">
+        <div class="window-header"><span>Baza Danych</span><span>v1.0</span></div>
+        <div class="list-area">
+            <input type="text" id="vInput" placeholder="Wklej ID filmu...">
+            <button class="btn" onclick="addNew()" style="width:100%">DODAJ DO SYSTEMU</button>
+            <div id="vList">
+                <div class="entry" onclick="playThis('dQw4w9WgXcQ')">> PROTOKÓŁ_INICJACJI</div>
+            </div>
         </div>
-        <div class="add-zone">
-            <input type="text" id="vId" placeholder="ID filmu z YouTube">
-            <button class="add-btn" onclick="addNewVideo()">DODAJ TRANSMISJĘ</button>
-        </div>
-    </div>
-    <div id="display-core">
-        <iframe id="nexusPlayer" src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-        <div class="info-bar">AKTYWNY SYGNAŁ: <span id="vTitle">STARTUP_SEQUENCE</span></div>
-    </div>
-</main>
+    </section>
 
-<script>
-    function loadVideo(id) {
-        document.getElementById('nexusPlayer').src = "https://www.youtube.com/embed/" + id;
-        document.getElementById('vTitle').innerText = "STREAM_ID: " + id;
-    }
-    function addNewVideo() {
-        let val = document.getElementById('vId').value;
-        let id = val.includes('v=') ? val.split('v=')[1].split('&')[0] : val;
-        if(id.trim() !== "") {
-            let list = document.getElementById('videoList');
-            let btn = document.createElement('button');
-            btn.className = "video-btn";
-            btn.innerText = "# TRANSMISJA: " + id;
-            btn.onclick = function() { loadVideo(id); };
-            list.prepend(btn);
-            document.getElementById('vId').value = "";
-        }
-    }
-</script>
-</body>
-</html>
+    <section class="window" style="grid-column: 2 / 3;">
+        <div class="window-header"><span>Główny Monitor</span><span>LIVE_SIGNAL</span></div>
+        <div id="player-container">
+            <div id="player"></div>
+        </div>
+        <div class="controls">
+            <div class="btn" onclick="player.playVideo()">URUCHOM</div>
+            <div class="btn" onclick="player.pauseVideo()">WSTRZYMAJ</div>
+            <div class="btn" onclick="player.mute()">WYCISZ</div>
+        </div>
+    </section>
+
+    <section class="window">
+        <div class="window-header"><span>Status</span><span>ID_099</span></div>
+        <div style="padding: 20px; font-size: 12px;">
+            <p><span class="status-dot"></span> Połączenie stabilne</p>
+            <p>> CPU: 14%</p>
+            <p>> RAM: 2.4GB / 8GB</p>
+            <p>> USER: Maciek_Admin</p>
+            <hr style="border:0; border-top:1px solid #222">
+            <p
+                
